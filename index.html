@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Model Viewer</title>
+    <style>
+        body { margin: 0; display: flex; flex-direction: column; align-items: center; }
+        canvas { display: block; }
+        .controls { margin: 20px; }
+        input { margin: 5px; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+    <div class="controls">
+        <label>Height: <input type="number" id="height" placeholder="Height" /></label>
+        <label>Width: <input type="number" id="width" placeholder="Width" /></label>
+        <label>Weight: <input type="number" id="weight" placeholder="Weight" /></label>
+        <label>Skin Color: <input type="color" id="skinColor" value="#ffffff" /></label>
+    </div>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Add lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(1, 1, 1).normalize();
+        scene.add(directionalLight);
+
+        // Load GLB model
+        const loader = new THREE.GLTFLoader();
+        let model;
+
+        // Ensure you replace the URL with the correct path to `men model 7.glb`
+        loader.load('https://blazedm1234.github.io/Online-Fittin-Room-7.0/men-model-7.glb', function(gltf) {
+            model = gltf.scene;
+            scene.add(model);
+            camera.position.z = 5;
+            animate();
+        }, undefined, function(error) {
+            console.error('An error occurred while loading the model:', error);
+        });
+
+        // Add OrbitControls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.25;
+
+        // Input listeners for controlling model properties
+        document.getElementById('height').addEventListener('input', function() {
+            if (model) {
+                model.scale.y = parseFloat(this.value) || 1;
+            }
+        });
+
+        document.getElementById('width').addEventListener('input', function() {
+            if (model) {
+                model.scale.x = parseFloat(this.value) || 1;
+            }
+        });
+
+        document.getElementById('weight').addEventListener('input', function() {
+            console.log('Weight changed to:', this.value);
+        });
+
+        document.getElementById('skinColor').addEventListener('input', function() {
+            if (model) {
+                model.traverse(function(child) {
+                    if (child.isMesh) {
+                        child.material.color.set(this.value);
+                    }
+                }.bind(this));
+            }
+        });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
